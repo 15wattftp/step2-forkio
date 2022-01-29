@@ -1,0 +1,14 @@
+$main-theme-color: #8d81ac;
+
+.theme {
+  background-color: $main-theme-color;
+}
+.article {
+  font-size: 18px;
+  font-weight: bold;
+  color: darkblue;
+}
+
+div.row {
+  display: flex;
+}
