@@ -1,0 +1,1 @@
+console.log(12/12),console.log(function(o,n){return o+n}(131,21));
