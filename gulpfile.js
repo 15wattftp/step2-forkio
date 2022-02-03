@@ -8,6 +8,8 @@ const del = require("del"); //    покурить Асинхронное при
 const browserSync = require('browser-sync').create();
 const sass = require('gulp-sass')(require('sass'));
 const rename = require('gulp-rename');
+const imagemin = require("gulp-imagemin");
+const sourcemaps = require('gulp-sourcemaps');
 
 
 const BsServer =  function() {
@@ -18,30 +20,44 @@ const BsServer =  function() {
           tunnel:true
       // .port:65133
   });
-};
+}
 
 
-// const BsReload = () => {
-//   return browserSync.reload();
-  
-// };
 
-function script() {
+function imageTask() {
+  return gulp.src('src/img/**/*.*')
+            .pipe(imagemin
+              ([
+                      imagemin.gifsicle({interlaced: true}),
+                      imagemin.mozjpeg({quality: 75, progressive: true}),
+                      imagemin.optipng({optimizationLevel: 5}),    
+              ]))
+            .pipe(gulp.dest('dist/img/'));
+
+
+
+}
+
+function scriptTask() {
   return gulp
     .src("./src/js/**/*.js")
+    .pipe(sourcemaps.init())
     .pipe(concat("script.js"))
+    
     .pipe(rename({suffix: '.min'}))
+    
     .pipe(
       uglify({
         toplevel: true,
       })
     )
+    .pipe(sourcemaps.write('../maps'))
     .pipe(dest("./dist/js/"))
     .pipe(browserSync.stream());
 }
 
 //                              уточнить как выставить последовательность в SAAS    + include path
-function styles() {
+function stylesTask() {
   return gulp
     .src("./src/styles/**/*.scss")
     .pipe(sass({outputStyle: 'compressed'}).on('error', sass.logError))
@@ -62,26 +78,21 @@ function styles() {
     .pipe(browserSync.stream());
 }
 
-// function html() {
+// function htmlTask() {
 //   return .src("./src/**/*.html")
 //         .pipe(dest("./dist/"))
         
 // }
 
-function watcher() {
-//   browserSync.init({
-//     server: {
-//         baseDir: "./"
-//     }
-// });
+function watcherTask() {
+
 BsServer();
 
 //.on('change', browserSync.reload)
-  watch("./src/styles/**/*.scss", styles); 
-  // watch("./src/styles/**/*.scss", ['sass']);
-  watch("./src/js/**/*.js", script);
+  watch("./src/styles/**/*.scss", stylesTask); 
+  watch("./src/js/**/*.js", scriptTask);
   watch("./**/*.html").on('change', browserSync.reload);
-}
+};
 
 // function clearDist() {
 //   del("./dist/*");
@@ -91,11 +102,14 @@ async function clearDist() {
   return await del("./dist/*");
 }
 
-// exports.styles = styles;
-// exports.script = script;
-// exports.html = html;
-// exports.watcher = watcher;
-// exports.clearDist = clearDist;
+// exports.stylesTask = stylesTask;
+// exports.scriptTask = scriptTask;
+// exports.htmlTask = htmlTask;
+// exports.watcherTask = watcherTask;
+ exports.clearDist = clearDist;
+exports.imageTask = imageTask;
 
-exports.build = series(clearDist,  parallel(script, styles),parallel( watcher));
+
+exports.build = series(clearDist,  parallel(scriptTask, stylesTask , imageTask), watcherTask);
+exports.dev = series(parallel(scriptTask, stylesTask , imageTask), watcherTask); 
 // exports.dev =series();
