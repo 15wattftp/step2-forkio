@@ -112,4 +112,3 @@ exports.imageTask = imageTask;
 
 exports.build = series(clearDist,  parallel(scriptTask, stylesTask , imageTask), watcherTask);
 exports.dev = series(parallel(scriptTask, stylesTask , imageTask), watcherTask); 
-// exports.dev =series();
